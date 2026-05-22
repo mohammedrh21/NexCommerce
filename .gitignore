@@ -1,0 +1,30 @@
+## .NET build outputs
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+
+## Rider / VS
+.idea/
+.vs/
+*.DotSettings.user
+
+## Secrets — NEVER commit these
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+
+## EF Core migrations snapshot secrets (safe to commit migrations themselves)
+# Migrations/ — keep in source control
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Logs
+logs/
+*.log
+
+## Published output
+publish/

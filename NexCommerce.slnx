@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Presentation/">
+    <Project Path="API/API.csproj" />
+    <Project Path="Client/Client.csproj" Id="971c83ef-f2fb-4fa7-9e4b-e25f9fe2a7a2" />
+  </Folder>
+  <Project Path="Application/Application.csproj" />
+  <Project Path="Domain/Domain.csproj" />
+  <Project Path="Infrastructure/Infrastructure.csproj" />
+</Solution>
