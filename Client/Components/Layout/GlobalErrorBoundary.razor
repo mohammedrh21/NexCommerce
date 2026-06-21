@@ -1,0 +1,61 @@
+@inherits ErrorBoundary
+@using Microsoft.Extensions.Logging
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@inject ILogger<GlobalErrorBoundary> Logger
+@inject IWebAssemblyHostEnvironment Env
+
+@if (CurrentException is null)
+{
+    @ChildContent
+}
+else
+{
+    <div class="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4 py-12 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full text-center space-y-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400">
+                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+            </div>
+            <div class="space-y-2">
+                <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Something went wrong</h2>
+                <p class="text-sm text-zinc-500 dark:text-zinc-400">An unexpected error occurred. Please try reloading the page or contacting support if the problem persists.</p>
+            </div>
+            <div class="flex justify-center gap-4">
+                <AppButton Variant="ButtonVariant.Primary" OnClick="HandleRecover">
+                    Try Again
+                </AppButton>
+                <a href="/" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-700">
+                    Go Home
+                </a>
+            </div>
+            @if (_isDevelopment)
+            {
+                <div class="mt-8 text-left bg-zinc-100 dark:bg-zinc-900 p-4 rounded-lg overflow-auto max-h-60 text-xs font-mono text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800">
+                    <p class="font-semibold text-red-600 dark:text-red-400 mb-2">@CurrentException?.Message</p>
+                    <pre>@CurrentException?.StackTrace</pre>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isDevelopment;
+
+    protected override void OnInitialized()
+    {
+        _isDevelopment = Env.Environment == "Development";
+    }
+
+    protected override async Task OnErrorAsync(Exception exception)
+    {
+        Logger.LogError(exception, "Unhandled exception caught by GlobalErrorBoundary");
+        await Task.CompletedTask;
+    }
+
+    private void HandleRecover()
+    {
+        Recover();
+    }
+}

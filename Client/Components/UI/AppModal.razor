@@ -1,0 +1,46 @@
+@namespace Client.Components.UI
+
+@if (IsOpen)
+{
+    <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-zinc-500/75 dark:bg-zinc-950/75 transition-opacity" 
+                 @onclick="HandleBackdropClick" aria-hidden="true"></div>
+
+            <!-- This element is to trick the browser into centering the modal contents. -->
+            <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+            <!-- Modal Panel -->
+            <div class="@GetModalPanelClasses() transform overflow-hidden rounded-lg bg-white dark:bg-zinc-900 text-left align-bottom shadow-xl transition-all sm:my-8 sm:align-middle">
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-6 py-4">
+                    <h3 class="text-base font-semibold leading-6 text-zinc-900 dark:text-zinc-100" id="modal-title">
+                        @Title
+                    </h3>
+                    <button type="button" 
+                            class="rounded-md bg-white dark:bg-zinc-900 text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300 focus:outline-none"
+                            @onclick="CloseAsync">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Body Content -->
+                <div class="px-6 py-4 text-zinc-700 dark:text-zinc-300">
+                    @ChildContent
+                </div>
+
+                <!-- Footer -->
+                @if (Footer != null)
+                {
+                    <div class="bg-zinc-50 dark:bg-zinc-900/50 px-6 py-4 flex flex-row-reverse gap-3 border-t border-zinc-200 dark:border-zinc-800">
+                        @Footer
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

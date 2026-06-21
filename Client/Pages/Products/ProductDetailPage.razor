@@ -1,0 +1,198 @@
+@page "/products/{Id:guid}"
+@using Client.Components.Products
+@using Client.Components.UI
+@using Client.Models.Products
+
+<PageTitle>@(_translation?.Name ?? "Product Details") | NexCommerce</PageTitle>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    @if (_isLoading)
+    {
+        <div class="animate-pulse flex flex-col md:flex-row gap-12">
+            <!-- Image Skeleton -->
+            <div class="w-full md:w-1/2 aspect-square bg-zinc-200 dark:bg-zinc-800 rounded-2xl"></div>
+            <!-- Details Skeleton -->
+            <div class="w-full md:w-1/2 space-y-6 pt-4">
+                <div class="h-8 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4"></div>
+                <div class="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4"></div>
+                <div class="h-10 bg-zinc-200 dark:bg-zinc-800 rounded w-1/3"></div>
+                <div class="space-y-2 pt-6">
+                    <div class="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-full"></div>
+                    <div class="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-5/6"></div>
+                    <div class="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-4/6"></div>
+                </div>
+                <div class="h-12 bg-zinc-200 dark:bg-zinc-800 rounded-lg w-full mt-8"></div>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <ErrorState Message="@_errorMessage" OnRetry="LoadProductAsync" />
+    }
+    else if (_product != null && _translation != null)
+    {
+        <nav class="flex mb-8 text-sm text-zinc-500 dark:text-zinc-400">
+            <ol class="flex items-center space-x-2">
+                <li>
+                    <a href="/" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Home</a>
+                </li>
+                <li>
+                    <svg class="h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </li>
+                <li>
+                    <a href="/products" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Products</a>
+                </li>
+                <li>
+                    <svg class="h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </li>
+                <li>
+                    <a href="/products?category=@_product.CategoryId" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">@_product.CategoryName</a>
+                </li>
+            </ol>
+        </nav>
+
+        <div class="flex flex-col md:flex-row gap-12">
+            <!-- Left: Image Gallery -->
+            <div class="w-full md:w-1/2">
+                <ProductImageGallery Images="@_product.Images" />
+            </div>
+
+            <!-- Right: Product Info -->
+            <div class="w-full md:w-1/2 flex flex-col">
+                <!-- Vendor -->
+                <a href="/vendors/@_product.VendorId" class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors mb-2">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
+                    </svg>
+                    @_product.VendorName
+                </a>
+
+                <!-- Title & Price -->
+                <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4">
+                    @_translation.Name
+                </h1>
+                
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="text-3xl font-extrabold text-zinc-900 dark:text-white">
+                        $@((_selectedVariant?.PriceAdjustment.HasValue == true) 
+                            ? (_product.Price + _selectedVariant.PriceAdjustment.Value).ToString("F2") 
+                            : _product.Price.ToString("F2"))
+                    </div>
+                    @if (_product.ReviewCount > 0)
+                    {
+                        <div class="flex items-center gap-2 border-l border-zinc-200 dark:border-zinc-700 pl-4">
+                            <StarRating Rating="@_product.Rating" Size="StarSize.Small" />
+                            <span class="text-sm text-zinc-500 dark:text-zinc-400">(@_product.ReviewCount reviews)</span>
+                        </div>
+                    }
+                </div>
+
+                <!-- Description -->
+                <div class="prose prose-zinc dark:prose-invert text-zinc-600 dark:text-zinc-300 mb-8 max-w-none">
+                    <p>@_translation.Description</p>
+                </div>
+
+                <!-- Variants Selection -->
+                @if (_product.Variants != null && _product.Variants.Any())
+                {
+                    <div class="space-y-6 mb-8 border-t border-b border-zinc-100 dark:border-zinc-800 py-6">
+                        @{
+                            var sizes = _product.Variants.Where(v => !string.IsNullOrEmpty(v.Size)).Select(v => v.Size).Distinct().ToList();
+                            var colors = _product.Variants.Where(v => !string.IsNullOrEmpty(v.Color)).Select(v => v.Color).Distinct().ToList();
+                        }
+
+                        @if (sizes.Any())
+                        {
+                            <div>
+                                <h3 class="text-sm font-medium text-zinc-900 dark:text-white mb-3">Size</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach (var size in sizes)
+                                    {
+                                        var variant = _product.Variants.FirstOrDefault(v => v.Size == size && v.Color == _selectedVariant?.Color) ?? 
+                                                      _product.Variants.FirstOrDefault(v => v.Size == size);
+                                                      
+                                        <button type="button"
+                                                @onclick="() => { if (variant != null) SelectVariant(variant); }"
+                                                class="px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all @(_selectedVariant?.Size == size ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-300" : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-600")">
+                                            @size
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (colors.Any())
+                        {
+                            <div>
+                                <h3 class="text-sm font-medium text-zinc-900 dark:text-white mb-3">Color</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach (var color in colors)
+                                    {
+                                        var variant = _product.Variants.FirstOrDefault(v => v.Color == color && v.Size == _selectedVariant?.Size) ?? 
+                                                      _product.Variants.FirstOrDefault(v => v.Color == color);
+                                                      
+                                        <button type="button"
+                                                @onclick="() => { if (variant != null) SelectVariant(variant); }"
+                                                class="px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all @(_selectedVariant?.Color == color ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-300" : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-600")">
+                                            @color
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Stock Status & Add to Cart -->
+                <div class="mt-auto pt-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        @if (_selectedVariant != null)
+                        {
+                            if (_selectedVariant.StockQuantity > 0)
+                            {
+                                <span class="relative flex h-3 w-3">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                                </span>
+                                <span class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                                    In Stock @(_selectedVariant.IsLowStock ? $" (Only {_selectedVariant.StockQuantity} left)" : "")
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="relative flex h-3 w-3">
+                                  <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                </span>
+                                <span class="text-sm font-medium text-red-600 dark:text-red-400">Out of Stock</span>
+                            }
+                        }
+                    </div>
+
+                    <div class="flex gap-4">
+                        <AppButton OnClick="AddToCart" 
+                                   Color="AppButtonColor.Primary" 
+                                   Class="flex-1 py-3 text-lg font-semibold shadow-lg shadow-indigo-600/20"
+                                   Disabled="@(_selectedVariant != null && _selectedVariant.StockQuantity <= 0)">
+                            <div class="flex items-center justify-center gap-2">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                </svg>
+                                Add to Cart
+                            </div>
+                        </AppButton>
+                        
+                        <button type="button" class="flex items-center justify-center p-3 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,274 @@
+@page "/checkout"
+@using Client.Models.Cart
+@using Client.Models.Orders
+@using Client.Models.Coupons
+@using Client.Services.Http
+@using Client.State.Auth
+@using Fluxor
+@using Fluxor.Blazor.Web.Components
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inherits FluxorComponent
+@namespace Client.Pages.Checkout
+
+<PageTitle>Checkout — NexCommerce</PageTitle>
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-2xl font-bold text-zinc-900 dark:text-white mb-8">Checkout</h1>
+
+    @if (_isLoading)
+    {
+        <div class="flex items-center justify-center py-24">
+            <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+        </div>
+    }
+    else if (_cart is null || !_cart.Items.Any())
+    {
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </div>
+            <h2 class="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Your cart is empty</h2>
+            <a href="/products" class="mt-4 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-sm transition-colors">
+                Browse Products
+            </a>
+        </div>
+    }
+    else if (_orderPlaced && _placedOrder is not null)
+    {
+        <!-- Order Success State -->
+        <div class="max-w-lg mx-auto text-center py-16">
+            <div class="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Order Placed!</h2>
+            <p class="text-zinc-500 dark:text-zinc-400 mb-1">Thank you for your purchase.</p>
+            <p class="text-sm text-zinc-400 dark:text-zinc-500 mb-6">
+                Order #<span class="font-mono font-semibold text-zinc-700 dark:text-zinc-300">@_placedOrder.Id.ToString("N")[..8].ToUpper()</span>
+            </p>
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 text-left space-y-3 mb-8">
+                <div class="flex justify-between text-sm">
+                    <span class="text-zinc-500 dark:text-zinc-400">Items</span>
+                    <span class="font-medium text-zinc-900 dark:text-white">@_placedOrder.Items.Count()</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-zinc-500 dark:text-zinc-400">Total</span>
+                    <span class="font-bold text-zinc-900 dark:text-white">@_placedOrder.TotalAmount.ToString("C")</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-zinc-500 dark:text-zinc-400">Status</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Pending</span>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="/orders/@_placedOrder.Id"
+                   class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition-colors">
+                    View Order Details
+                </a>
+                <a href="/products"
+                   class="px-5 py-2.5 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold rounded-xl text-sm transition-colors">
+                    Continue Shopping
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- Shipping & Payment Form -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- Shipping Address -->
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+                    <h2 class="text-base font-semibold text-zinc-900 dark:text-white mb-5 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+                        Shipping Address
+                    </h2>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label for="shipping-address" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                                Full Address <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="shipping-address"
+                                      @bind="_shippingAddress"
+                                      rows="3"
+                                      placeholder="Street address, city, state, ZIP / postal code, country"
+                                      class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                            @if (_showValidation && string.IsNullOrWhiteSpace(_shippingAddress))
+                            {
+                                <p class="mt-1 text-xs text-red-500">Shipping address is required.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coupon -->
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+                    <h2 class="text-base font-semibold text-zinc-900 dark:text-white mb-5 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+                        Promo Code <span class="text-xs text-zinc-400 font-normal ml-1">(optional)</span>
+                    </h2>
+                    <div class="flex gap-2">
+                        <input id="checkout-coupon"
+                               type="text"
+                               @bind="_couponCode"
+                               placeholder="Enter promo code"
+                               class="flex-1 px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        <button @onclick="ApplyCouponAsync"
+                                disabled="@(_isApplyingCoupon || string.IsNullOrWhiteSpace(_couponCode))"
+                                class="px-4 py-2 bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all min-w-[80px]">
+                            @if (_isApplyingCoupon)
+                            {
+                                <span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto"></span>
+                            }
+                            else
+                            {
+                                <span>Apply</span>
+                            }
+                        </button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(_couponError))
+                    {
+                        <p class="mt-1.5 text-xs text-red-500">@_couponError</p>
+                    }
+                    @if (_validatedCoupon is not null)
+                    {
+                        <div class="mt-2 flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            Coupon "@_validatedCoupon.Code" — Save @(_validatedCoupon.DiscountAmount?.ToString("C"))
+                            <button @onclick="RemoveCoupon" class="ml-auto text-zinc-400 hover:text-red-500">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    }
+                </div>
+
+                <!-- Payment Details -->
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+                    <h2 class="text-base font-semibold text-zinc-900 dark:text-white mb-5 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">3</span>
+                        Payment Details
+                    </h2>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label for="cardholder-name" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                                Cardholder Name <span class="text-red-500">*</span>
+                            </label>
+                            <input id="cardholder-name"
+                                   type="text"
+                                   @bind="_cardholderName"
+                                   placeholder="John Doe"
+                                   class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                            @if (_showValidation && string.IsNullOrWhiteSpace(_cardholderName))
+                            {
+                                <p class="mt-1 text-xs text-red-500">Cardholder name is required.</p>
+                            }
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                                Card Information <span class="text-red-500">*</span>
+                            </label>
+                            <div class="px-3 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 min-h-[44px]">
+                                <div id="stripe-card-element"></div>
+                            </div>
+                            <div id="stripe-card-errors" role="alert" class="mt-2 text-xs text-red-500"></div>
+                            @if (!string.IsNullOrEmpty(_stripeInitError))
+                            {
+                                <p class="mt-2 text-xs text-red-500">@_stripeInitError</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="lg:col-span-2">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 sticky top-6">
+                    <h2 class="text-base font-semibold text-zinc-900 dark:text-white mb-5">Order Summary</h2>
+
+                    <!-- Items -->
+                    <div class="space-y-3 mb-5 max-h-64 overflow-y-auto pr-1 scrollbar-thin">
+                        @foreach (var item in _cart.Items)
+                        {
+                            <div class="flex items-center gap-3">
+                                @if (!string.IsNullOrWhiteSpace(item.ProductImage))
+                                {
+                                    <img src="@item.ProductImage" alt="@item.ProductName"
+                                         class="w-12 h-12 rounded-lg object-cover bg-zinc-100 dark:bg-zinc-800 flex-shrink-0" />
+                                }
+                                else
+                                {
+                                    <div class="w-12 h-12 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex-shrink-0"></div>
+                                }
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-zinc-900 dark:text-white truncate">@item.ProductName</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Qty: @item.Quantity</p>
+                                </div>
+                                <span class="text-sm font-semibold text-zinc-900 dark:text-white flex-shrink-0">
+                                    @item.LineTotal.ToString("C")
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="space-y-2 mb-5 pb-5 border-b border-zinc-200 dark:border-zinc-800 text-sm">
+                        <div class="flex justify-between text-zinc-600 dark:text-zinc-400">
+                            <span>Subtotal</span>
+                            <span class="font-medium text-zinc-900 dark:text-white">@_cart.SubTotal.ToString("C")</span>
+                        </div>
+                        @if (_discount > 0)
+                        {
+                            <div class="flex justify-between text-emerald-600 dark:text-emerald-400">
+                                <span>Discount</span>
+                                <span class="font-medium">-@_discount.ToString("C")</span>
+                            </div>
+                        }
+                        <div class="flex justify-between text-zinc-600 dark:text-zinc-400">
+                            <span>Shipping</span>
+                            <span class="text-emerald-600 dark:text-emerald-400 font-medium">Free</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between text-lg font-bold text-zinc-900 dark:text-white mb-6">
+                        <span>Total</span>
+                        <span>@((_cart.SubTotal - _discount).ToString("C"))</span>
+                    </div>
+
+                    <button @onclick="PlaceOrderAsync"
+                            disabled="@_isPlacingOrder"
+                            id="place-order-btn"
+                            class="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm">
+                        @if (_isPlacingOrder)
+                        {
+                            <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span>Placing Order...</span>
+                        }
+                        else
+                        {
+                            <span>Place Order</span>
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        }
+                    </button>
+
+                    <div class="mt-3 flex items-center justify-center gap-1.5 text-xs text-zinc-400">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Secured by SSL encryption
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

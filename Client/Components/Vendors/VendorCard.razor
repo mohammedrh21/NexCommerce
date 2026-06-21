@@ -1,0 +1,59 @@
+@using Client.Models.Vendors
+@namespace Client.Components.Vendors
+
+<div class="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 hover:shadow-md transition-all duration-200 @Class">
+    <div>
+        <!-- Icon/Avatar Placeholder -->
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 mb-4 font-bold text-lg uppercase group-hover:scale-105 transition-transform duration-200">
+            @StoreInitials
+        </div>
+
+        <!-- Details -->
+        <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-1">
+            <a href="/vendors/@Vendor.Id" class="hover:underline">
+                @Vendor.StoreName
+            </a>
+        </h3>
+        
+        <p class="text-xs text-zinc-550 dark:text-zinc-400 mt-1">
+            Owned by <span class="font-medium text-zinc-700 dark:text-zinc-300">@Vendor.OwnerName</span>
+        </p>
+
+        <!-- Stats -->
+        <div class="mt-4 flex items-center justify-between text-xs text-zinc-500 border-t border-zinc-100 dark:border-zinc-800/80 pt-3">
+            <span>Products: <strong class="text-zinc-800 dark:text-zinc-200">@Vendor.ProductCount</strong></span>
+            <span>Joined: <strong class="text-zinc-800 dark:text-zinc-200">@Vendor.CreatedAt.ToString("MMM yyyy")</strong></span>
+        </div>
+    </div>
+
+    <!-- Action Link -->
+    <div class="mt-5">
+        <a href="/vendors/@Vendor.Id" class="inline-flex w-full items-center justify-center rounded-lg bg-zinc-50 dark:bg-zinc-850 py-2 text-xs font-semibold text-indigo-650 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors duration-150">
+            Visit Store
+            <svg class="ml-1.5 h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
+            </svg>
+        </a>
+    </div>
+</div>
+
+@code {
+    [Parameter] public VendorListItemDto Vendor { get; set; } = default!;
+    [Parameter] public string Class { get; set; } = string.Empty;
+
+    private string StoreInitials
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Vendor?.StoreName))
+                return "?";
+
+            var words = Vendor.StoreName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length >= 2)
+            {
+                return $"{words[0][0]}{words[1][0]}";
+            }
+            return Vendor.StoreName[..Math.Min(2, Vendor.StoreName.Length)];
+        }
+    }
+}

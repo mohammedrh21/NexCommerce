@@ -1,0 +1,70 @@
+@namespace Client.Components.UI
+
+<div class="@GetToastClasses() relative flex w-full max-w-sm rounded-lg border bg-white dark:bg-zinc-900 p-4 shadow-lg ring-1 ring-black/5 dark:ring-white/5 transition-all duration-300" role="alert">
+    <!-- Icon -->
+    <div class="flex-shrink-0">
+        @switch (Message.Type)
+        {
+            case ToastType.Success:
+                <svg class="h-6 w-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                break;
+            case ToastType.Error:
+                <svg class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                break;
+            case ToastType.Warning:
+                <svg class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                break;
+            case ToastType.Info:
+                <svg class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 111.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.028M12 8.25h.007v.008H12V8.25zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                break;
+        }
+    </div>
+
+    <!-- Content -->
+    <div class="ml-3 flex-1 pt-0.5">
+        <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">@Message.Title</p>
+        <p class="mt-1 text-sm text-zinc-550 dark:text-zinc-400">@Message.Message</p>
+    </div>
+
+    <!-- Close Button -->
+    <div class="ml-4 flex flex-shrink-0">
+        <button type="button" 
+                class="inline-flex rounded-md bg-white dark:bg-zinc-900 text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-355 focus:outline-none"
+                @onclick="Dismiss">
+            <span class="sr-only">Close</span>
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 001.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public ToastMessage Message { get; set; } = default!;
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    private async Task Dismiss()
+    {
+        await OnDismiss.InvokeAsync();
+    }
+
+    private string GetToastClasses()
+    {
+        return Message.Type switch
+        {
+            ToastType.Success => "border-l-4 border-emerald-500 border-zinc-200 dark:border-zinc-800",
+            ToastType.Error => "border-l-4 border-red-500 border-zinc-200 dark:border-zinc-800",
+            ToastType.Warning => "border-l-4 border-amber-500 border-zinc-200 dark:border-zinc-800",
+            ToastType.Info => "border-l-4 border-indigo-500 border-zinc-200 dark:border-zinc-800",
+            _ => "border-zinc-200 dark:border-zinc-800"
+        };
+    }
+}

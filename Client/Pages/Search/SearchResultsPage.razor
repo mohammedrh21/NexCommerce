@@ -1,0 +1,19 @@
+@page "/search"
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager NavigationManager
+
+@code {
+    [Parameter][SupplyParameterFromQuery(Name = "q")] public string? Keyword { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrWhiteSpace(Keyword))
+        {
+            NavigationManager.NavigateTo($"/products?q={Uri.EscapeDataString(Keyword)}");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/products");
+        }
+    }
+}

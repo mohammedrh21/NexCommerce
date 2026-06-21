@@ -1,0 +1,43 @@
+@using System.Linq.Expressions
+@namespace Client.Components.UI
+@inherits Microsoft.AspNetCore.Components.Forms.InputBase<string>
+
+<div class="w-full @Class">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label for="@Id" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5 select-none">
+            @Label
+        </label>
+    }
+    <div class="relative rounded-md shadow-sm">
+        @if (Icon != null)
+        {
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                @Icon
+            </div>
+        }
+        
+        <input id="@Id"
+               type="@Type"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               class="@GetInputClasses()"
+               value="@CurrentValue"
+               @oninput="HandleInput"
+               @attributes="AdditionalAttributes" />
+
+        @if (RightIcon != null)
+        {
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                @RightIcon
+            </div>
+        }
+    </div>
+    
+    @if (FieldIdentifier.Model != null)
+    {
+        <div class="mt-1.5 text-xs text-red-600 dark:text-red-400">
+            <ValidationMessage For="@ValidationExpression" />
+        </div>
+    }
+</div>

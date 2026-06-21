@@ -1,0 +1,28 @@
+@inherits LayoutComponentBase
+@namespace Client.Layout
+
+<div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-200">
+    <GlobalErrorBoundary>
+        <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+            <a href="/" class="inline-flex items-center gap-2">
+                <span class="bg-indigo-650 text-white rounded-lg p-1.5 shadow-md shadow-indigo-600/20 flex items-center justify-center">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                </span>
+                <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-zinc-900 to-indigo-600 dark:from-white dark:to-indigo-400 bg-clip-text text-transparent">
+                    NexCommerce
+                </span>
+            </a>
+        </div>
+
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
+            <div class="bg-white dark:bg-zinc-900 py-8 px-4 shadow-xl rounded-2xl border border-zinc-200 dark:border-zinc-800/80 sm:px-10">
+                @Body
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <ToastContainer />
+    </GlobalErrorBoundary>
+</div>

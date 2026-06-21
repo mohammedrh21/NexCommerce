@@ -1,0 +1,190 @@
+@page "/products"
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+<PageTitle>Products - NexCommerce</PageTitle>
+
+<div class="space-y-6 pb-12">
+    <!-- Breadcrumb -->
+    @{
+        var breadcrumbs = new List<AppBreadcrumb.BreadcrumbItem>
+        {
+            new("Products", "/products")
+        };
+        if (CategoryId.HasValue && _categories.Any())
+        {
+            var cat = _categories.FirstOrDefault(c => c.Id == CategoryId.Value);
+            if (cat != null)
+            {
+                breadcrumbs.Add(new(cat.Name));
+            }
+        }
+    }
+    <AppBreadcrumb Items="breadcrumbs" />
+
+    <!-- Main Container -->
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Sidebar Filters -->
+        <div class="w-full lg:w-64 flex-shrink-0 space-y-6">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-base font-bold text-zinc-900 dark:text-white">Filters</h3>
+                    <button type="button" @onclick="ClearFilters" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 hover:underline">
+                        Clear All
+                    </button>
+                </div>
+
+                <!-- Categories filter -->
+                <div class="space-y-3">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Categories</h4>
+                    <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        <button type="button" 
+                                @onclick="() => SetCategory(null)" 
+                                class="flex w-full items-center justify-between text-xs font-medium py-1 @(CategoryId == null ? "text-indigo-600 dark:text-indigo-400 font-bold" : "text-zinc-650 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white")">
+                            <span>All Categories</span>
+                        </button>
+                        @foreach (var cat in _categories)
+                        {
+                            var catId = cat.Id;
+                            <button type="button" 
+                                    @onclick="() => SetCategory(catId)" 
+                                    class="flex w-full items-center justify-between text-xs font-medium py-1 @(CategoryId == catId ? "text-indigo-650 dark:text-indigo-400 font-bold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white")">
+                                <span class="truncate">@cat.Name</span>
+                                <span class="ml-2 text-[10px] text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full">@cat.ProductCount</span>
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <!-- Price filter -->
+                <div class="space-y-3">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Price Range</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2">
+                            <input type="number" 
+                                   placeholder="Min" 
+                                   @bind="_localMinPrice" 
+                                   class="block w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-850 px-2 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                            <span class="text-zinc-400 text-xs">to</span>
+                            <input type="number" 
+                                   placeholder="Max" 
+                                   @bind="_localMaxPrice" 
+                                   class="block w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-855 px-2 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                        </div>
+                        <button type="button" 
+                                @onclick="ApplyFilters" 
+                                class="w-full flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 text-xs font-semibold transition-colors duration-150">
+                            Apply Price
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ratings filter -->
+                <div class="space-y-3">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Minimum Rating</h4>
+                    <div class="space-y-2">
+                        @foreach (var rating in new decimal[] { 4, 3, 2, 1 })
+                        {
+                            var rVal = rating;
+                            <button type="button" 
+                                    @onclick="() => SetRating(rVal)" 
+                                    class="flex w-full items-center gap-2 text-xs text-zinc-650 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white py-1 @(MinRating == rVal ? "text-indigo-650 dark:text-indigo-400 font-bold" : "")">
+                                <div class="flex items-center text-amber-400">
+                                    @for (int s = 1; s <= 5; s++)
+                                    {
+                                        <svg class="h-3.5 w-3.5 @(s <= rVal ? "fill-current" : "stroke-current fill-none")" viewBox="0 0 20 20">
+                                            <path d="M10.868 2.784a.75.75 0 00-1.736 0l-1.92 4.87-5.188.423a.75.75 0 00-.43 1.332l3.96 3.424-1.2 5.034a.75.75 0 001.146.832L10 16.015l4.5 2.684a.75.75 0 001.146-.832l-1.2-5.034 3.96-3.424a.75.75 0 00-.43-1.332l-5.188-.423-1.92-4.87z" />
+                                        </svg>
+                                    }
+                                </div>
+                                <span>& Up</span>
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products List Area -->
+        <div class="flex-1 space-y-6">
+            <!-- Top Toolbar -->
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-zinc-900 dark:text-white">
+                        @if (!string.IsNullOrEmpty(Keyword))
+                        {
+                            <span>Search results for "@Keyword"</span>
+                        }
+                        else if (CategoryId.HasValue && _categories.Any())
+                        {
+                            var cat = _categories.FirstOrDefault(c => c.Id == CategoryId.Value);
+                            <span>Browse @(cat?.Name ?? "Category")</span>
+                        }
+                        else
+                        {
+                            <span>All Products</span>
+                        }
+                    </h2>
+                    <p class="text-xs text-zinc-500 mt-0.5">
+                        @if (_searchResult != null)
+                        {
+                            <span>Showing @_searchResult.TotalCount products</span>
+                        }
+                    </p>
+                </div>
+
+                <!-- Sort options -->
+                <div class="flex items-center gap-2 self-end sm:self-auto">
+                    <span class="text-xs text-zinc-500 whitespace-nowrap">Sort By</span>
+                    <select class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-850 px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            value="@($"{SortBy}_{(SortDescending ? "desc" : "asc")}")"
+                            @onchange='(e) => {
+                                var val = e.Value?.ToString() ?? "createdAt_desc";
+                                var parts = val.Split("_");
+                                SetSort(parts[0], parts[1] == "desc");
+                            }'>
+                        <option value="createdAt_desc">Newest First</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
+                        <option value="rating_desc">Highest Rated</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            @if (_isLoadingProducts)
+            {
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    @for (int i = 0; i < 8; i++)
+                    {
+                        <ProductCard IsLoading="true" />
+                    }
+                </div>
+            }
+            else if (_searchResult == null || !_searchResult.Items.Any())
+            {
+                <EmptyState Title="No products found" 
+                            Description="We couldn't find any products matching your filters. Try clearing some options."
+                            ActionText="Clear All Filters"
+                            OnAction="ClearFilters" />
+            }
+            else
+            {
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    @foreach (var product in _searchResult.Items)
+                    {
+                        var productItem = MapSearchResultToListItem(product);
+                        <ProductCard Product="@productItem"
+                                     IsInWishlist="@_wishlistProductIds.Contains(productItem.Id)"
+                                     OnAddToCart="HandleAddToCart"
+                                     OnWishlistToggle="HandleWishlistToggle" />
+                    }
+                </div>
+
+                <!-- Pagination -->
+                <AppPagination CurrentPage="_searchResult.Page"
+                               TotalPages="_searchResult.TotalPages"
+                               PageChanged="ChangePage" />
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,88 @@
+@namespace Client.Components.Products
+
+@if (IsLoading)
+{
+    <div class="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm animate-pulse">
+        <div class="aspect-h-1 aspect-w-1 w-full bg-zinc-200 dark:bg-zinc-800 h-48 sm:h-56"></div>
+        <div class="flex flex-1 flex-col p-4 space-y-3">
+            <div class="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4"></div>
+            <div class="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4"></div>
+            <div class="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2"></div>
+            <div class="pt-2 flex justify-between items-center">
+                <div class="h-5 bg-zinc-200 dark:bg-zinc-800 rounded w-1/3"></div>
+                <div class="h-8 bg-zinc-200 dark:bg-zinc-800 rounded w-8 rounded-full"></div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:shadow-md transition-all duration-200 @Class">
+        <!-- Wishlist Button -->
+        <button type="button" 
+                class="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 dark:bg-zinc-900/80 text-zinc-400 hover:text-red-500 shadow-sm backdrop-blur-sm transition-colors duration-150"
+                @onclick="HandleWishlistToggle" @onclick:stopPropagation>
+            <svg class="h-5 w-5 @(IsInWishlist ? "fill-red-550 text-red-500" : "")" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
+        </button>
+
+        <!-- Product Image -->
+        <a href="/products/@Product.Id" class="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 block">
+            @if (!string.IsNullOrEmpty(Product.PrimaryImageUrl))
+            {
+                <img src="@Product.PrimaryImageUrl" 
+                     alt="@Product.Name" 
+                     loading="lazy" 
+                     class="h-48 sm:h-56 w-full object-cover object-center group-hover:scale-105 transition-transform duration-300" />
+            }
+            else
+            {
+                <!-- Fallback Placeholder -->
+                <div class="flex h-48 sm:h-56 w-full items-center justify-center text-zinc-400 bg-zinc-100 dark:bg-zinc-850">
+                    <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                </div>
+            }
+        </a>
+
+        <!-- Content -->
+        <div class="flex flex-1 flex-col p-4">
+            <!-- Category and Vendor -->
+            <div class="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                <span>@Product.CategoryName</span>
+                <a href="/vendors/@Product.VendorId" class="hover:text-indigo-650 transition-colors font-medium">@Product.VendorName</a>
+            </div>
+
+            <!-- Title -->
+            <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-1">
+                <a href="/products/@Product.Id" class="hover:underline">
+                    @Product.Name
+                </a>
+            </h3>
+
+            <!-- Star Rating -->
+            <div class="mt-1.5 flex items-center gap-1.5">
+                <StarRating Rating="@Product.Rating" IsInteractive="false" Class="scale-90 origin-left" />
+                @if (Product.ReviewCount > 0)
+                {
+                    <span class="text-xs text-zinc-400">(@Product.ReviewCount)</span>
+                }
+            </div>
+
+            <!-- Price and Action -->
+            <div class="mt-auto pt-3 flex items-center justify-between">
+                <span class="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                    @Product.Price.ToString("C")
+                </span>
+                
+                <AppButton Variant="ButtonVariant.Primary" Size="ButtonSize.Sm" Class="rounded-full !p-2" OnClick="HandleAddToCart">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                </AppButton>
+            </div>
+        </div>
+    </div>
+}

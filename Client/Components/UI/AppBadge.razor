@@ -1,0 +1,57 @@
+@namespace Client.Components.UI
+
+<span class="@GetBadgeClasses()">
+    @if (ShowDot)
+    {
+        <svg class="-ml-0.5 mr-1.5 h-1.5 w-1.5 @GetDotColorClasses()" fill="currentColor" viewBox="0 0 8 8">
+            <circle cx="4" cy="4" r="3" />
+        </svg>
+    }
+    @ChildContent
+</span>
+
+@code {
+    public enum BadgeColor
+    {
+        Indigo,
+        Zinc,
+        Emerald,
+        Red,
+        Amber
+    }
+
+    [Parameter] public BadgeColor Color { get; set; } = BadgeColor.Indigo;
+    [Parameter] public bool ShowDot { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Class { get; set; } = string.Empty;
+
+    private string GetBadgeClasses()
+    {
+        var baseClasses = "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors duration-150";
+        
+        var colorClasses = Color switch
+        {
+            BadgeColor.Indigo => "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-750 dark:text-indigo-400 ring-indigo-600/10 dark:ring-indigo-500/20",
+            BadgeColor.Zinc => "bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 ring-zinc-500/10 dark:ring-zinc-700",
+            BadgeColor.Emerald => "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 ring-emerald-600/10 dark:ring-emerald-500/20",
+            BadgeColor.Red => "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 ring-red-600/10 dark:ring-red-500/20",
+            BadgeColor.Amber => "bg-amber-50 dark:bg-amber-955/30 text-amber-800 dark:text-amber-400 ring-amber-600/10 dark:ring-amber-500/20",
+            _ => "bg-zinc-50 text-zinc-650 ring-zinc-500/10"
+        };
+
+        return $"{baseClasses} {colorClasses} {Class}".Trim();
+    }
+
+    private string GetDotColorClasses()
+    {
+        return Color switch
+        {
+            BadgeColor.Indigo => "text-indigo-400",
+            BadgeColor.Zinc => "text-zinc-400",
+            BadgeColor.Emerald => "text-emerald-400",
+            BadgeColor.Red => "text-red-400",
+            BadgeColor.Amber => "text-amber-400",
+            _ => "text-zinc-400"
+        };
+    }
+}

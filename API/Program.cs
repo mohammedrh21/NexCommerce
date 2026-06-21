@@ -103,11 +103,18 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorClient", policy =>
-        policy.WithOrigins(
-                builder.Configuration["AllowedOrigins:Client"] ?? "https://localhost:7001")
+    {
+        var origins = builder.Configuration.GetSection("AllowedOrigins:Client").Get<string[]>();
+        if (origins == null || origins.Length == 0)
+        {
+            origins = new[] { "https://localhost:7001", "https://localhost:7156", "http://localhost:5029" };
+        }
+        
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials());
+              .AllowCredentials();
+    });
 });
 
 // ── Build ─────────────────────────────────────────────────────

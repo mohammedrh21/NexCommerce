@@ -1,0 +1,76 @@
+@namespace Client.Components.UI
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<div id="@Id" class="relative inline-block text-left @Class">
+    <div @onclick="ToggleDropdown" @onclick:stopPropagation>
+        @Trigger
+    </div>
+
+    @if (IsOpen)
+    {
+        <div class="absolute @GetAlignClasses() z-30 mt-2 w-56 origin-top-right rounded-md bg-white dark:bg-zinc-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none divide-y divide-zinc-100 dark:divide-zinc-800"
+             role="menu"
+             aria-orientation="vertical"
+             aria-labelledby="menu-button"
+             tabindex="-1"
+             @onclick="CloseDropdown">
+            <div class="py-1" role="none">
+                @ChildContent
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private DotNetObjectReference<AppDropdown>? _objRef;
+
+    [Parameter] public string Id { get; set; } = $"dropdown-{Guid.NewGuid():N}";
+    [Parameter] public RenderFragment Trigger { get; set; } = default!;
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter] public string Align { get; set; } = "right";
+    [Parameter] public string Class { get; set; } = string.Empty;
+
+    public bool IsOpen { get; private set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("nexCommerce.registerClickOutside", Id, _objRef, nameof(CloseDropdownFromJs));
+        }
+    }
+
+    public void ToggleDropdown()
+    {
+        IsOpen = !IsOpen;
+        StateHasChanged();
+    }
+
+    public void CloseDropdown()
+    {
+        IsOpen = false;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void CloseDropdownFromJs()
+    {
+        if (IsOpen)
+        {
+            IsOpen = false;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        _objRef?.Dispose();
+    }
+
+    private string GetAlignClasses()
+    {
+        return Align.ToLower() == "left" ? "left-0" : "right-0";
+    }
+}

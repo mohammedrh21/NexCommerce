@@ -1,0 +1,76 @@
+@page "/wishlist"
+@using Client.Models.Products
+@using Client.Models.Common
+@using Client.Services.Http
+@using Client.Components.Products
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@namespace Client.Pages.Wishlist
+
+<PageTitle>My Wishlist — NexCommerce</PageTitle>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center gap-3 mb-8">
+        <h1 class="text-2xl font-bold text-zinc-900 dark:text-white">My Wishlist</h1>
+        @if (_result is not null)
+        {
+            <span class="text-sm text-zinc-500 dark:text-zinc-400">(@_result.TotalCount items)</span>
+        }
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            @for (int i = 0; i < 8; i++)
+            {
+                <ProductCard IsLoading="true" />
+            }
+        </div>
+    }
+    else if (_result is null || !_wishlistItems.Any())
+    {
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+            </div>
+            <h2 class="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Your wishlist is empty</h2>
+            <p class="text-zinc-500 dark:text-zinc-400 mb-6 text-sm">Save items you like to buy them later.</p>
+            <a href="/products" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-sm transition-colors">
+                Explore Products
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            @foreach (var product in _wishlistItems)
+            {
+                <ProductCard Product="product"
+                             IsInWishlist="true"
+                             OnWishlistToggle="HandleRemoveFromWishlist"
+                             OnAddToCart="HandleAddToCart" />
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (_result.TotalPages > 1)
+        {
+            <div class="mt-8 flex items-center justify-center gap-2">
+                <button @onclick="() => ChangePage(_currentPage - 1)"
+                        disabled="@(!_result.HasPreviousPage)"
+                        class="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    ← Previous
+                </button>
+                <span class="text-sm text-zinc-500 dark:text-zinc-400 px-2">
+                    Page @_currentPage of @_result.TotalPages
+                </span>
+                <button @onclick="() => ChangePage(_currentPage + 1)"
+                        disabled="@(!_result.HasNextPage)"
+                        class="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    Next →
+                </button>
+            </div>
+        }
+    }
+</div>

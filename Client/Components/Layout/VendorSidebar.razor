@@ -1,0 +1,98 @@
+@namespace Client.Components.Layout
+@inject NavigationManager Navigation
+
+<aside class="flex flex-col w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 h-screen sticky top-0 transition-colors duration-200">
+    <!-- Header -->
+    <div class="h-16 flex items-center px-6 border-b border-zinc-200 dark:border-zinc-800 gap-2.5">
+        <span class="bg-indigo-650 text-white rounded-lg p-1.5 flex items-center justify-center shadow-md shadow-indigo-650/20">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+        </span>
+        <div class="flex flex-col">
+            <span class="text-sm font-bold text-zinc-900 dark:text-white leading-none">NexCommerce</span>
+            <span class="text-[10px] font-medium text-zinc-450 dark:text-zinc-500 mt-0.5">Seller Center</span>
+        </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+        <a href="/vendor" class="@GetLinkClass("/vendor", true)">
+            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+            </svg>
+            Dashboard
+        </a>
+
+        <a href="/vendor/products" class="@GetLinkClass("/vendor/products")">
+            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            My Products
+        </a>
+
+        <a href="/vendor/orders" class="@GetLinkClass("/vendor/orders")">
+            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16.5h.01" />
+            </svg>
+            Orders
+        </a>
+
+        <a href="/vendor/coupons" class="@GetLinkClass("/vendor/coupons")">
+            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2zM9 16l6-6" />
+            </svg>
+            Coupons
+        </a>
+
+        <a href="/vendor/profile" class="@GetLinkClass("/vendor/profile")">
+            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Store Profile
+        </a>
+
+        <a href="/vendor/chat" class="@GetLinkClass("/vendor/chat")">
+            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Customer Chat
+        </a>
+    </nav>
+
+    <!-- Footer Action -->
+    <div class="p-4 border-t border-zinc-200 dark:border-zinc-800">
+        <a href="/" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-zinc-650 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 transition-colors">
+            <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Exit Seller Center
+        </a>
+    </div>
+</aside>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += (s, e) => StateHasChanged();
+    }
+
+    private string GetLinkClass(string path, bool exact = false)
+    {
+        var currentUri = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var relativePath = path.StartsWith('/') ? path.Substring(1) : path;
+        
+        bool isActive = exact 
+            ? currentUri == relativePath 
+            : currentUri.StartsWith(relativePath);
+
+        var baseClass = "flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 select-none";
+        
+        if (isActive)
+        {
+            return $"{baseClass} bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400";
+        }
+        
+        return $"{baseClass} text-zinc-605 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-150";
+    }
+}

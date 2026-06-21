@@ -1,0 +1,83 @@
+@namespace Client.Components.UI
+
+<div class="flex items-center gap-1 @Class">
+    @for (int i = 1; i <= MaxStars; i++)
+    {
+        var starIndex = i;
+        var fillPercent = GetFillPercent(starIndex);
+        var gradId = $"star-grad-{starIndex}-{_instanceId}";
+
+        <svg class="@(IsInteractive ? "cursor-pointer transition-transform duration-150 hover:scale-110" : "") h-5 w-5"
+             viewBox="0 0 24 24"
+             stroke="currentColor"
+             stroke-width="1.5"
+             @onclick="() => HandleStarClick(starIndex)"
+             @onmouseenter="() => HandleMouseEnter(starIndex)"
+             @onmouseleave="HandleMouseLeave">
+            <defs>
+                <linearGradient id="@gradId" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="@($"{fillPercent}%")" stop-color="#EAB308" />
+                    <stop offset="@($"{fillPercent}%")" stop-color="#E4E4E7" />
+                </linearGradient>
+            </defs>
+            <path stroke-linecap="round" stroke-linejoin="round" 
+                  fill="url(#@gradId)"
+                  d="M11.48 3.499c.195-.558 1.04-.558 1.235 0l2.409 6.886a.75.75 0 00.716.5h7.244c.59 0 .835.76.357 1.107l-5.86 4.195a.75.75 0 00-.273.84l2.21 6.305c.193.55-.426 1.0-.901.666l-5.86-4.195a.75.75 0 00-.882 0l-5.86 4.195c-.475.334-1.094-.117-.901-.666l2.21-6.305a.75.75 0 00-.273-.84L1.258 11.99c-.478-.347-.233-1.107.357-1.107h7.244a.75.75 0 00.716-.5L11.48 3.5z" />
+        </svg>
+    }
+</div>
+
+@code {
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
+    private decimal? _hoverRating;
+
+    [Parameter] public decimal Rating { get; set; }
+    [Parameter] public EventCallback<decimal> RatingChanged { get; set; }
+    [Parameter] public int MaxStars { get; set; } = 5;
+    [Parameter] public bool IsInteractive { get; set; } = false;
+    [Parameter] public string Class { get; set; } = string.Empty;
+
+    private decimal ActiveRating => _hoverRating ?? Rating;
+
+    private int GetFillPercent(int starIndex)
+    {
+        var rating = ActiveRating;
+        if (rating >= starIndex)
+        {
+            return 100;
+        }
+        if (rating <= starIndex - 1)
+        {
+            return 0;
+        }
+        
+        // Fractional part
+        var fraction = rating - (starIndex - 1);
+        return (int)(fraction * 100);
+    }
+
+    private async Task HandleStarClick(int starIndex)
+    {
+        if (IsInteractive)
+        {
+            Rating = starIndex;
+            await RatingChanged.InvokeAsync(Rating);
+        }
+    }
+
+    private void HandleMouseEnter(int starIndex)
+    {
+        if (IsInteractive)
+        {
+            _hoverRating = starIndex;
+        }
+    }
+
+    private void HandleMouseLeave()
+    {
+        if (IsInteractive)
+        {
+            _hoverRating = null;
+        }
+    }
+}
